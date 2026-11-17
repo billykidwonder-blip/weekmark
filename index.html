@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f5f2ee" />
+  <meta name="description" content="A tactile two-week M and D tracker with live percentages." />
+  <title>Weekmark — Two Week Tracker</title>
+  <script>
+    (() => {
+      try {
+        const stored = localStorage.getItem("weekmark.theme.v1");
+        const theme = stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.dataset.theme = theme;
+      } catch {
+        /* keep light default */
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=21" />
+</head>
+<body>
+  <div class="ambient" aria-hidden="true">
+    <span class="orb orb-pink"></span>
+    <span class="orb orb-blue"></span>
+    <span class="grid"></span>
+  </div>
+
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="weekmark home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg class="brand-logo" viewBox="0 0 40 40" focusable="false">
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#ff4f8b" />
+              <stop offset="1" stop-color="#3b7bff" />
+            </linearGradient>
+          </defs>
+          <g fill="#ff4f8b">
+            <circle class="logo-dot" cx="20" cy="5.5" r="2.6" style="animation-delay: 0s" />
+            <circle class="logo-dot" cx="26.29" cy="6.94" r="2.6" style="animation-delay: 0.2s" />
+            <circle class="logo-dot" cx="31.34" cy="10.96" r="2.6" style="animation-delay: 0.4s" />
+            <circle class="logo-dot" cx="34.14" cy="16.77" r="2.6" style="animation-delay: 0.6s" />
+            <circle class="logo-dot" cx="34.14" cy="23.23" r="2.6" style="animation-delay: 0.8s" />
+            <circle class="logo-dot" cx="31.34" cy="29.04" r="2.6" style="animation-delay: 1s" />
+            <circle class="logo-dot" cx="26.29" cy="33.06" r="2.6" style="animation-delay: 1.2s" />
+          </g>
+          <g fill="#3b7bff">
+            <circle class="logo-dot" cx="20" cy="34.5" r="2.6" style="animation-delay: 1.4s" />
+            <circle class="logo-dot" cx="13.71" cy="33.06" r="2.6" style="animation-delay: 1.6s" />
+            <circle class="logo-dot" cx="8.66" cy="29.04" r="2.6" style="animation-delay: 1.8s" />
+            <circle class="logo-dot" cx="5.86" cy="23.23" r="2.6" style="animation-delay: 2s" />
+            <circle class="logo-dot" cx="5.86" cy="16.77" r="2.6" style="animation-delay: 2.2s" />
+            <circle class="logo-dot" cx="8.66" cy="10.96" r="2.6" style="animation-delay: 2.4s" />
+            <circle class="logo-dot" cx="13.71" cy="6.94" r="2.6" style="animation-delay: 2.6s" />
+          </g>
+          <circle cx="20" cy="20" r="4.4" fill="url(#logoGrad)" />
+        </svg>
+      </span>
+      <span class="brand-name" aria-hidden="true"
+        ><span>w</span><span>e</span><span>e</span><span>k</span><span>m</span><span>a</span><span>r</span
+        ><span>k</span></span
+      >
+    </a>
+
+    <div class="header-actions">
+      <button class="theme-button" id="themeButton" type="button" aria-pressed="false" aria-label="Switch to dark mode">
+        <span class="theme-icon" aria-hidden="true">
+          <svg class="icon-sun" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="4.2" />
+            <path d="M12 2.5v2.4M12 19.1v2.4M4.7 4.7l1.7 1.7M17.6 17.6l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.7 19.3l1.7-1.7M17.6 6.4l1.7-1.7" />
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24">
+            <path d="M20.2 14.3A8.2 8.2 0 1 1 9.7 3.8a6.6 6.6 0 0 0 10.5 10.5Z" />
+          </svg>
+        </span>
+      </button>
+      <button class="motion-button" id="motionButton" type="button" aria-pressed="true">
+        <span class="motion-dot" aria-hidden="true"></span>
+        <span class="motion-copy">Effects on</span>
+      </button>
+      <span class="save-state" id="saveState" role="status">
+        <span class="save-dot"></span>
+        <span class="save-copy">Saved locally</span>
+      </span>
+      <button class="reset-button" id="resetButton" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 11a8.1 8.1 0 1 0-2.35 5.65M20 4v7h-7" />
+        </svg>
+        Reset
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="pageTitle">
+      <div class="eyebrow"><span></span> Two-week rhythm</div>
+      <h1 id="pageTitle">Mark your rhythm.<br /><em>See the balance.</em></h1>
+      <p class="hero-copy">
+        Tap any day to move it through <strong>blank</strong>, <strong class="pink-text">M</strong>,
+        and <strong class="blue-text">D</strong>. Your percentages update instantly.
+      </p>
+
+      <div class="cycle-guide" aria-label="M and D cycle">
+        <span class="guide-item guide-blank"><i></i> Blank</span>
+        <span class="guide-arrow" aria-hidden="true">→</span>
+        <span class="guide-item guide-pink"><i>M</i></span>
+        <span class="guide-arrow" aria-hidden="true">→</span>
+        <span class="guide-item guide-blue"><i>D</i></span>
+        <span class="guide-arrow" aria-hidden="true">→</span>
+        <span class="guide-item guide-blank"><i></i> Blank</span>
+      </div>
+    </section>
+
+    <section class="overview panel" aria-labelledby="overviewTitle">
+      <div class="panel-heading">
+        <div>
+          <span class="section-kicker">Live overview</span>
+          <h2 id="overviewTitle">Your overall balance</h2>
+        </div>
+        <div class="total-days">
+          <strong id="markedCount">0</strong>
+          <span>of 14 days marked</span>
+        </div>
+      </div>
+
+      <div class="overview-grid">
+        <div class="balance-visual">
+          <div
+            class="balance-ring"
+            id="balanceRing"
+            role="img"
+            aria-label="0 percent marked"
+          >
+            <div class="ring-center">
+              <span>Marked</span>
+              <strong id="ringPercent">0%</strong>
+            </div>
+          </div>
+          <div class="ring-caption">All 14 days</div>
+        </div>
+
+        <div class="metric-list" aria-live="polite">
+          <article class="metric metric-m">
+            <div class="metric-icon">M</div>
+            <div class="metric-copy">
+              <span>M percentage</span>
+              <strong id="overallMPercent">0%</strong>
+            </div>
+            <div class="metric-meta" id="overallMCount">0 of 14 days</div>
+          </article>
+
+          <article class="metric metric-d">
+            <div class="metric-icon">D</div>
+            <div class="metric-copy">
+              <span>D percentage</span>
+              <strong id="overallDPct">0%</strong>
+            </div>
+            <div class="metric-meta" id="overallDCount">0 of 14 days</div>
+          </article>
+
+          <article class="metric metric-blank">
+            <div class="metric-icon" aria-hidden="true">—</div>
+            <div class="metric-copy">
+              <span>Unmarked</span>
+              <strong id="overallBlankPct">100%</strong>
+            </div>
+            <div class="metric-meta" id="overallBlankCount">14 of 14 days</div>
+          </article>
+        </div>
+      </div>
+
+      <div class="stacked-bar" aria-hidden="true">
+        <span class="bar-m" id="barM"></span>
+        <span class="bar-d" id="barD"></span>
+        <span class="bar-blank" id="barBlank"></span>
+      </div>
+    </section>
+
+    <section class="schedule panel" aria-labelledby="scheduleTitle">
+      <div class="panel-heading schedule-heading">
+        <div>
+          <span class="section-kicker">Two week view</span>
+          <h2 id="scheduleTitle">Your schedule</h2>
+        </div>
+        <div class="interaction-hint">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 11.5V6.75a1.75 1.75 0 0 1 3.5 0v4.25m0-2a1.75 1.75 0 0 1 3.5 0v2m0-1a1.75 1.75 0 0 1 3.5 0v3.25c0 4.28-2.72 7-6.75 7H11c-2.1 0-3.55-.78-4.65-2.45L3.55 14.4a1.7 1.7 0 0 1 2.6-2.15L9 15" />
+          </svg>
+          Click a day to cycle
+        </div>
+      </div>
+
+      <div class="schedule-scroll" tabindex="0" aria-label="Scrollable two-week schedule">
+        <div class="schedule-grid" id="scheduleGrid"></div>
+      </div>
+    </section>
+
+    <section class="configs panel" aria-labelledby="configsTitle">
+      <div class="panel-heading">
+        <div>
+          <span class="section-kicker">Saved setups</span>
+          <h2 id="configsTitle">Configurations</h2>
+        </div>
+        <div class="config-file-actions">
+          <button class="soft-button" id="exportButton" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 15v4h14v-4" /></svg>
+            Export current
+          </button>
+          <button class="soft-button" id="importButton" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V9m0 0 4 4M12 9 8 13M5 9V5h14v4" /></svg>
+            Import JSON
+          </button>
+          <input id="importFile" type="file" accept="application/json,.json" hidden />
+        </div>
+      </div>
+
+      <div class="save-config-row">
+        <label class="sr-only" for="configName">Configuration name</label>
+        <div class="config-input-wrap">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5" /></svg>
+          <input id="configName" type="text" maxlength="40" placeholder="Name this configuration" autocomplete="off" />
+        </div>
+        <button class="primary-button" id="saveConfigButton" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h12l2 2v14H5V4Z" /><path d="M8 4v6h8V4M8 20v-6h8v6" /></svg>
+          Save current
+        </button>
+      </div>
+
+      <div class="config-list" id="configList" aria-live="polite"></div>
+      <div class="config-empty" id="configEmpty">
+        <span class="empty-icon" aria-hidden="true">⌁</span>
+        <div>
+          <strong>No saved configurations yet</strong>
+          <p>Save this schedule to switch between different routines.</p>
+        </div>
+      </div>
+    </section>
+
+    <p class="privacy-note">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3 5 6v5c0 4.6 2.9 8.2 7 10 4.1-1.8 7-5.4 7-10V6l-7-3Z" />
+        <path d="m9.5 12 1.7 1.7 3.5-3.6" />
+      </svg>
+      Your schedule stays on this device — no account and no server.
+    </p>
+  </main>
+
+  <footer>
+    <span>Two weeks. One clear picture.</span>
+    <span id="todayLabel"></span>
+  </footer>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <dialog class="confirm-dialog" id="resetDialog">
+    <form method="dialog">
+      <div class="dialog-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 1 0-2.35 5.65M20 4v7h-7" /></svg>
+      </div>
+      <h2>Clear the whole schedule?</h2>
+      <p>All M and D marks will be removed from both weeks.</p>
+      <div class="dialog-actions">
+        <button class="dialog-cancel" value="cancel">Keep schedule</button>
+        <button class="dialog-confirm" value="confirm">Clear all</button>
+      </div>
+    </form>
+  </dialog>
+
+  <noscript>
+    <div class="noscript">Please enable JavaScript to use the interactive tracker.</div>
+  </noscript>
+
+  <script src="app.js?v=6"></script>
+</body>
+</html>
